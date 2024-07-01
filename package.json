@@ -1,4 +1,19 @@
 {
   "name": "oracle-testing",
-  "packageManager": "yarn@4.3.1"
+  "packageManager": "yarn@4.3.1",
+  "scripts": {
+    "migrate": "knex migrate:latest"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.606.0",
+    "@aws-sdk/client-ssm": "^3.606.0",
+    "@types/node": "^20",
+    "@types/oracledb": "^6",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.2"
+  },
+  "dependencies": {
+    "knex": "^3.1.0",
+    "oracledb": "^6.5.1"
+  }
 }

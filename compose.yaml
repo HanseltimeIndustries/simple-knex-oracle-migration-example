@@ -1,0 +1,13 @@
+version: '3.9'
+services:
+  # https://github.com/oracle/docker-images/blob/main/OracleDatabase/SingleInstance/README.md#running-oracle-database-23ai-free-in-a-container
+  oracle-db:
+    image: container-registry.oracle.com/database/free:latest
+    ports:
+      - 8888:1521
+    environment:
+      - ORACLE_PWD=c
+    volumes:
+      - /opt/oracle/oradata
+      - /opt/oracle/scripts/startup
+      - /opt/oracle/scripts/setup
