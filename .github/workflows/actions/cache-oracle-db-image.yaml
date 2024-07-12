@@ -1,0 +1,36 @@
+# This action stores the oracle docker image for reload
+# IMPORTANT - given how large the oracle image is, this may not save you any time.  Please test it on your setup.
+# This may be valuable if you run this on self-hosted runners where download bandwidth is either priceier or not
+# as fast as on Github runners.  Those runners take about 2 minutes to do the full 8.5 GB image download, and
+# the action takes about 2 minutes to unzip and load as well.
+name: Cache Oracle Docker Image
+description: Calls the standard deploy methods in each package and notifies a slack channel if any of the packages actually released
+inputs:
+  imageTag:
+    description: The image tag to pull from the repo and store
+    required: true
+
+runs:
+  using: composite
+  steps:
+    # Important Note: Oracle DB is already massive (8.5GB unzipped, 2.5GB zipped)
+    # this optimization may not be worth it depending on repo cache priorities
+    - name: Restore OracleDB Image Cache if it exists
+      id: cache-docker-oracledb
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.ORACLE_IMAGE_PATH }}
+        key: cache-docker-oracledb
+
+    - name: Update OracleDB Image Cache if cache miss
+      if: steps.cache-docker-oracledb.outputs.cache-hit != 'true'
+      run: | 
+        mkdir -p "${{ env.ORACLE_IMAGE_PATH }}"
+        docker pull container-registry.oracle.com/database/free:latest
+        docker image save container-registry.oracle.com/database/free:latest | gzip > ${{ env.ORACLE_IMAGE_PATH }}/oracledb.tar.gz
+
+    - name: Use OracleDB Image Cache if cache hit
+      if: steps.cache-docker-oracledb.outputs.cache-hit == 'true'
+      run: |
+        docker load < ${{ env.ORACLE_IMAGE_PATH }}/oracledb.tar.gz
+      

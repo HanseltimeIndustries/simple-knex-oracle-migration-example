@@ -11,6 +11,7 @@ concurrency:
 env:
   # Set this to ensure that jest does not create snapshot files if they're missing
   CI: true
+  ORACLE_IMAGE_PATH: 'ci/cache/docker/oracledb'
 
 jobs:
   db-checks:
@@ -22,17 +23,25 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: corepack
+        run: |
+          corepack enable
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
           cache-dependency-path: yarn.lock
-      - name: corepack
-        run: |
-          corepack enable
+      
+      # ONLY Uncomment this if your network downloads need to be limited.  The time save in cache is negligible
+      # on Github Remote runners
+      # - name: Cache Oracle DB Image
+      #   uses: ./.github/actions/cache-oracle-db-image.yaml
+
       - name: install
         run: |
           yarn install
+
+      # Available optimization - if you would like, you can only run this if there is a diff on the migration folder
       - name: db test
         run: |
           yarn db-test-full
