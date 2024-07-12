@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`matches snapshots for the db stored_procedures: PROCEDURE "SelectAllDiscisples" 1`] = `
+"PROCEDURE "SelectAllDiscisples"
+    AS
+    BEGIN
+    SELECT * FROM kungfu_disciple WHERE id = 44;
+    END;
+"
+`;
+
+exports[`matches snapshots for the db stored_procedures: PROCEDURE SelectAllDiscisples 1`] = `
+"PROCEDURE SelectAllDiscisples
+    AS
+    BEGIN
+    SELECT * FROM kungfu_disciple;
+    END
+"
+`;

@@ -28,7 +28,16 @@ module.exports = {
       database: 'FREEPDB1',
     },
   },
-
+  dbTest: {
+    ...commonConfig,
+    connection: {
+      host: '127.0.0.1',
+      port: 8889,
+      user: 'SYSTEM',
+      password: 'testPword',
+      database: 'FREEPDB1',
+    },
+  },
   develop: {
     ...commonConfig,
     connection: async () => {

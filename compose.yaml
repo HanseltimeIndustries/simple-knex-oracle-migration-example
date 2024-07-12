@@ -2,12 +2,40 @@ version: '3.9'
 services:
   # https://github.com/oracle/docker-images/blob/main/OracleDatabase/SingleInstance/README.md#running-oracle-database-23ai-free-in-a-container
   oracle-db:
+    build: dev/oracledb
+    # This set of images is way more reliable than oracle's own images and can support ARM development
     image: container-registry.oracle.com/database/free:latest
     ports:
       - 8888:1521
     environment:
-      - ORACLE_PWD=c
+      - ORACLE_PWD=testPword
+    volumes:
+      - oracledata:/opt/oracle/oradata
+      - /opt/oracle/scripts/startup
+      - /opt/oracle/scripts/setup
+    # health check that is valuable for ensuring the db is up before use
+    healthcheck:
+      test: ["CMD-SHELL", "./healthcheck.sh" ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+  int-test-oracle-db:
+    # This set of images is way more reliable than oracle's own images and can support ARM development
+    build: dev/oracledb
+    ports:
+      - 8889:1521
+    environment:
+      - ORACLE_PWD=testPword
     volumes:
       - /opt/oracle/oradata
       - /opt/oracle/scripts/startup
       - /opt/oracle/scripts/setup
+    # health check that is valuable for ensuring the db is up before use
+    healthcheck:
+      test: ["CMD-SHELL", "./healthcheck.sh" ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+volumes:
+  oracledata: {}

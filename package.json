@@ -2,13 +2,22 @@
   "name": "oracle-testing",
   "packageManager": "yarn@4.3.1",
   "scripts": {
-    "migrate": "knex migrate:latest"
+    "migrate": "knex migrate:latest",
+    "new-migration": "knex migrate:make",
+    "test": "jest",
+    "db-test": "jest --config jest.dbsnap.config.js",
+    "db-test-infra-up": "docker compose down int-test-oracle-db && docker compose up int-test-oracle-db -d --wait",
+    "db-test-full": "yarn db-test-infra-up && yarn db-test",
+    "clean-db-container": "docker compose down oracle-db && docker volume rm oracle-testing_oracledata"
   },
   "devDependencies": {
     "@aws-sdk/client-secrets-manager": "^3.606.0",
     "@aws-sdk/client-ssm": "^3.606.0",
+    "@types/jest": "^29.5.12",
     "@types/node": "^20",
     "@types/oracledb": "^6",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.2"
   },
