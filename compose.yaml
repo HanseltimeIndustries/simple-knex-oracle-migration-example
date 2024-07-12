@@ -3,8 +3,6 @@ services:
   # https://github.com/oracle/docker-images/blob/main/OracleDatabase/SingleInstance/README.md#running-oracle-database-23ai-free-in-a-container
   oracle-db:
     build: dev/oracledb
-    # This set of images is way more reliable than oracle's own images and can support ARM development
-    image: container-registry.oracle.com/database/free:latest
     ports:
       - 8888:1521
     environment:

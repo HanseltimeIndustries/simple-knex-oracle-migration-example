@@ -4,7 +4,7 @@ exports[`matches snapshots for the db stored_procedures: PROCEDURE "SelectAllDis
 "PROCEDURE "SelectAllDiscisples"
     AS
     BEGIN
-    SELECT * FROM kungfu_disciple WHERE id = 44;
+    SELECT * FROM kungfu_disciple WHERE id = 77;
     END;
 "
 `;
