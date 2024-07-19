@@ -1,15 +1,15 @@
 import Knex, { Knex as KnexType} from 'knex'
 import { join } from 'path'
+import config, { Envs } from './knexfile'
 
 let client: KnexType
 
 beforeAll(async () => {
-    const config = await import(join(__dirname, '..', 'knexfile.js'))
 
-    const envConfig = config['dbTest']
+    const envConfig = config[Envs.TestDb]
     client = Knex(envConfig)
 
-    const migrationTable = envConfig.tableName ?? 'knex_migrations'
+    const migrationTable = envConfig.migrations?.tableName ?? 'knex_migrations'
     // check if there is a migrations table
     const table = await client.raw(`
         SELECT table_name FROM user_tables

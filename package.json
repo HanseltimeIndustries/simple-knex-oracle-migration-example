@@ -2,8 +2,9 @@
   "name": "oracle-testing",
   "packageManager": "yarn@4.3.1",
   "scripts": {
-    "migrate": "knex migrate:latest",
-    "new-migration": "knex migrate:make",
+    "knex:run": "knex --knexfile src/db/knexfile.ts",
+    "migrate": "yarn knex:run migrate:latest",
+    "new-migration": "yarn knex:run migrate:make -x ts",
     "test": "jest",
     "db-test": "jest --config jest.dbsnap.config.js",
     "db-test-infra-up": "docker compose down int-test-oracle-db && docker compose up int-test-oracle-db -d --wait",
