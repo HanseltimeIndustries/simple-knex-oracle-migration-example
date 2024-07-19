@@ -1,14 +1,24 @@
-// Update with your config settings.
+import type { Knex } from "knex";
+import { SecretsManager } from '@aws-sdk/client-secrets-manager';
+import { SSM } from '@aws-sdk/client-ssm';
+import { join } from "path";
+
+export enum Envs {
+  Local = 'local',
+  TestDb = 'dbTest',
+  Devrlop = 'develop',
+  Production = 'production',
+}
+
 
 const commonConfig = {
   client: 'oracledb',
   migrations: {
-    tableName: 'knex_migrations'
+    tableName: 'knex_migrations',
+    directory: join(__dirname, 'migrations')
   }
 };
 
-const { SecretsManager } = require('@aws-sdk/client-secrets-manager');
-const { SSM } = require ('@aws-sdk/client-ssm');
 
 const secretsManager = new SecretsManager();
 const ssm = new SSM();
@@ -16,8 +26,7 @@ const ssm = new SSM();
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
-module.exports = {
-
+const config: { [key in Envs]: Knex.Config } = {
   local: {
     ...commonConfig,
     connection: {
@@ -46,10 +55,16 @@ module.exports = {
       const connInfoResp = await ssm.getParameter({
         Name: '/dev/db/connInfo'
       });
+      if (!connInfoResp.Parameter?.Value) {
+        throw new Error(`Could not get /dev/db/connInfo parameter`)
+      }
       const connInfo = JSON.parse(connInfoResp.Parameter.Value);
       const migrateUserInfoResp = await secretsManager.getSecretValue({
-        Name: '/dev/db/migrationUser'
+        SecretId: '/dev/db/migrationUser'
       });
+      if (!migrateUserInfoResp.SecretString) {
+        throw new Error(`Could not get /dev/db/migrationUser secret`)
+      }
       const migrateUserInfo = JSON.parse(migrateUserInfoResp.SecretString);
       // TODO: we can apply an expiration time here too to get some auto-retry on secret rotation
       return {
@@ -73,10 +88,16 @@ module.exports = {
       const connInfoResp = await ssm.getParameter({
         Name: '/dev/db/connInfo'
       });
+      if (!connInfoResp.Parameter?.Value) {
+        throw new Error(`Could not get /dev/db/connInfo parameter`)
+      }
       const connInfo = JSON.parse(connInfoResp.Parameter.Value)
       const migrateUserInfoResp = await secretsManager.getSecretValue({
-        Name: '/dev/db/migrationUser'
+        SecretId: '/dev/db/migrationUser'
       });
+      if (!migrateUserInfoResp.SecretString) {
+        throw new Error(`Could not get /dev/db/migrationUser secret`)
+      }
       const migrateUserInfo = JSON.parse(migrateUserInfoResp.SecretString);
       // TODO: we can apply an expiration time here too to get some auto-retry on secret rotation
       return {
@@ -94,3 +115,5 @@ module.exports = {
   }
 
 };
+
+export default config;
