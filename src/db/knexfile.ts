@@ -15,7 +15,9 @@ const commonConfig = {
   client: 'oracledb',
   migrations: {
     tableName: 'knex_migrations',
-    directory: join(__dirname, 'migrations')
+    directory: join(__dirname, 'migrations'),
+    // This is an unfortunate design choice, they wrap all migrationns in one transaction for 0 work avoidance
+    disableTransactions: true
   }
 };
 
