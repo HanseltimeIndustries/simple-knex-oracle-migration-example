@@ -7,7 +7,8 @@
 const config = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  testRegex: '(<rootDir>/.*|)\\.spec\\.[tj]s$'
+  testPathIgnorePatterns: ['dist'],
+  testRegex: '(<rootDir>/src.*|)\\.spec\\.[tj]s$'
 };
 
 module.exports = config;

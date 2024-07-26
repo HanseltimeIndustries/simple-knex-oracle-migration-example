@@ -11,6 +11,11 @@ export async function up(knex: Knex): Promise<void> {
           CONSTRAINT kungfu_disciple_pk PRIMARY key (id)
         )
         `)
+    await knex.raw(`
+      CREATE UNIQUE INDEX UNIQUE_NAME_AND_SPECIALTY
+      ON kungfu_disciple (name, specialty)
+      `)
+      console.log('damn')
 }
 
 

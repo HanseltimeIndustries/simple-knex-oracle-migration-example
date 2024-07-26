@@ -6,10 +6,9 @@ import { join } from "path";
 export enum Envs {
   Local = 'local',
   TestDb = 'dbTest',
-  Devrlop = 'develop',
+  Develop = 'develop',
   Production = 'production',
 }
-
 
 const commonConfig = {
   client: 'oracledb',
@@ -20,7 +19,6 @@ const commonConfig = {
     disableTransactions: true
   }
 };
-
 
 const secretsManager = new SecretsManager();
 const ssm = new SSM();

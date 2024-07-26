@@ -3,8 +3,8 @@
   "packageManager": "yarn@4.3.1",
   "scripts": {
     "knex:run": "knex --knexfile src/db/knexfile.ts",
-    "migrate": "yarn knex:run migrate:latest",
-    "new-migration": "yarn knex:run migrate:make -x ts",
+    "migrate": "yarn ts-node src/db/bin/full-migration.ts --knexfile src/db/knexfile.ts",
+    "new-migration": "yarn knex:run migrate:make -x ts && create-corresponding sql file",
     "test": "jest",
     "db-test": "jest --config jest.dbsnap.config.js",
     "db-test-infra-up": "docker compose down int-test-oracle-db && docker compose up int-test-oracle-db -d --wait",
@@ -17,6 +17,7 @@
     "@types/jest": "^29.5.12",
     "@types/node": "^20",
     "@types/oracledb": "^6",
+    "commander": "^12.1.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.5",
     "ts-node": "^10.9.2",
