@@ -41,6 +41,10 @@ jobs:
         run: |
           yarn install
 
+      - name: unit-test
+        run: |
+          yarn test
+
       # Available optimization - if you would like, you can only run this if there is a diff on the migration folder
       - name: db test
         run: |
