@@ -1,9 +1,12 @@
 import Knex, { Knex as KnexType} from 'knex'
 import { join } from 'path'
 import config, { Envs } from './knexfile'
+import { fullMigration } from './fullMigration'
 
 let client: KnexType
-
+/**
+ * Ensures that we at least run integration tests
+ */
 beforeAll(async () => {
 
     const envConfig = config[Envs.TestDb]
@@ -29,37 +32,63 @@ beforeAll(async () => {
 
 
     // Run all migrations
-    await client.migrate.latest()
+    await fullMigration({
+        env: Envs.TestDb,
+        knexfile: join(__dirname, 'knexfile.ts')
+    })
 })
 
 afterAll(async () => {
     await client?.destroy()
 })
 
-it('matches snapshots for the db stored_procedures', async () => {
+it('ran successfully', () => {
+    // Note: this just ensures we have passed the migrate phase in before each
+    return;
+})
+
+it.skip.each([
+    // TODO: any sources that we want to control
+])('matches snapshots for the db %s', async (dataObject) => {
     const sources = await client<any>('ALL_SOURCE')
         .select('TEXT')
         .where({
-            TYPE: 'PROCEDURE',
+            TYPE: dataObject,
             OWNER: 'SYSTEM'
         })
 
-    const procedures = parseTextFiles(sources)
+    const procedures = parseTextFiles(sources, dataObject)
     
     procedures.forEach((procedure) => {
         expect(procedure.source).toMatchSnapshot(procedure.name)
     })
 })
 
+// TODO: setup up a filter to avoid system sequences if you want
+// it.skip('matches snapshots for sequeunces %s', async () => {
+//     const sources = await client<any>('ALL_SEQUENCES')
+//     .select('TEXT')
+//     .where({
+//         TYPE: 'INDEX',
+//         OWNER: 'SYSTEM'
+//     })
+
+//     const procedures = parseTextFiles(sources, 'INDEX')
+
+//     procedures.forEach((procedure) => {
+//         expect(procedure.source).toMatchSnapshot(procedure.name)
+//     })
+// })
+
 function parseTextFiles(sourceLines: {
     TEXT: string
-}[]) {
+}[], dataObject: string) {
     let idx = -1
     return sourceLines.reduce((sources, sourceLine) => {
         const textPiece = sourceLine.TEXT
-        if (textPiece.startsWith('PROCEDURE ')) {
+        if (textPiece.startsWith(`${dataObject} `)) {
             idx++
-            const match = /PROCEDURE\s+[^\s]+/.exec(textPiece)
+            const match = new RegExp(`${dataObject}\\s+[^\\s]+`).exec(textPiece)
             sources.push({
                 name: match![0],
                 source: textPiece

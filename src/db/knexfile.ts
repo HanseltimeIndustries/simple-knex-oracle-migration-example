@@ -6,19 +6,19 @@ import { join } from "path";
 export enum Envs {
   Local = 'local',
   TestDb = 'dbTest',
-  Devrlop = 'develop',
+  Develop = 'develop',
   Production = 'production',
 }
-
 
 const commonConfig = {
   client: 'oracledb',
   migrations: {
     tableName: 'knex_migrations',
-    directory: join(__dirname, 'migrations')
+    directory: join(__dirname, 'migrations'),
+    // This is an unfortunate design choice, they wrap all migrationns in one transaction for 0 work avoidance
+    disableTransactions: true
   }
 };
-
 
 const secretsManager = new SecretsManager();
 const ssm = new SSM();

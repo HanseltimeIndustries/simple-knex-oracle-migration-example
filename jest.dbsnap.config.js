@@ -2,5 +2,6 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  testRegex: '(<rootDir>/.*|)dbspec\\.[tj]s$'
+  testPathIgnorePatterns: ['dist'],
+  testRegex: '(<rootDir>\/src.*|)dbspec\\.[tj]s$'
 };

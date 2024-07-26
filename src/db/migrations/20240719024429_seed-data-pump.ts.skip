@@ -1,0 +1,31 @@
+import type { Knex } from "knex";
+import { CompiledTypes, ensureNoCompileErrors, TableDataExportBuilder } from "../utils";
+
+
+export async function up(knex: Knex): Promise<void> {
+    console.log('runing export migration')
+    await knex.raw(
+        new TableDataExportBuilder('LOCAL_DEV_SEED_EXPORT')
+            .addTable({
+                table: 'kungfu_disciple',
+                schema: 'SYSTEM',
+                where: 'id > 3',
+            })
+            .addTable({
+                table: 'my_name_table',
+                schema: '',
+                where: 'date > now()',
+                sample: 500
+            })
+            .build()
+    )
+
+    await ensureNoCompileErrors(knex, CompiledTypes.Procedure, 'LOCAL_DEV_SEED_EXPORT')
+
+    // Re-run the procedure and do something
+}
+
+
+export async function down(knex: Knex): Promise<void> {
+}
+
