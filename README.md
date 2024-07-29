@@ -138,6 +138,34 @@ don't overwrite anything unexpected.  You will commit those changed snapshot fil
 
 # Troubleshooting
 
+## Debugging stored procedures
+
+In order to debug stored_procedures, Oracle needs to be able connect back to an open debugger client that you are running.  This could
+be SQL Developer, VsCode Oracle Sql Developer tools, etc.  Because of this need though, we need to setup ACLs for the database so that
+it can connect to the correct port.
+
+If you look at the [startup](./dev/oracledb/startup/) folder, you will see that we provide a `debugging.sql` file that will run when the
+database is brought up.  The file is setup to allow connection on the `65000` port for debugging for the `SYSTEM` user.  If your database
+needs to connect with other users in local devlopment, you will need to update that script to pre-allow them.
+
+Once you have started your local database, you will then need to start up a program that will try and run debugging.  You will want to make sure that
+the program is only using the same port `65000`.
+
+### About host.docker.internal
+
+At least in the Oracle PL/SQL Developer tools for VsCode, there is a bug where the "Run Debug" function does not allow us to say use `host.docker.internal`.
+This is critical for us to use since you're using your local IDE and debugging tool but the oracle db is running in a container and
+needs to reach back out to your local machine (localhost resolves to the container).
+
+If your debug tools do not allow you to do this, never fear!
+
+1. First file a bug with oracle.  It's pretty clear they're not fully up to speed on docker development yet.
+2. You can open an sql file in your debug tool of choice and use the example in [example-debug-call.sql](dev/oracledb/example-debug-call.sql)
+
+Under the surface, your debugger clients are wrapping calls to the oracle database in the same `TCP_CONNECT` calls as well.
+
+**IMPORANT** - If you want to use break points in stored_procedures, remember that you will need to compile it for debug using your pl/sql development tool.
+
 ## Migration Failures
 
 There may come a time, while migrating (especially locally), where your knex migration fails mid-migration
