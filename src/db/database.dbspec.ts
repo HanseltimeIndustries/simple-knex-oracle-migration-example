@@ -42,9 +42,13 @@ afterAll(async () => {
     await client?.destroy()
 })
 
-it('ran successfully', () => {
+it('ran migrations successfully', () => {
     // Note: this just ensures we have passed the migrate phase in before each
     return;
+})
+
+it('runs local seeds sucessfully', async () => {
+    await client.seed.run()
 })
 
 it.skip.each([

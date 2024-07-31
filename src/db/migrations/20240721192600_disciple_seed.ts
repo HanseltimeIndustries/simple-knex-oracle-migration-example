@@ -1,6 +1,12 @@
 import type { Knex } from "knex";
 
-
+/**
+ * This is an example of running a time-sensitive seed-like operation.
+ * 
+ * This is different from seeding because we need it to happen to influence
+ * other migrations in time.
+ * @param knex 
+ */
 export async function up(knex: Knex): Promise<void> {
     console.log('runing seed migration')
     await knex.insert([

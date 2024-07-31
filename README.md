@@ -2,6 +2,25 @@
 
 This is a very simple repo that demonstrates the use of knex as a migration manager to an oracledb.
 
+- [oracledb knex migration pattern](#oracledb-knex-migration-pattern)
+  - [compose.yaml](#composeyaml)
+  - [src/db/knexfile.ts](#srcdbknexfilets)
+  - [Migrating](#migrating)
+  - [Seeding](#seeding)
+    - [Creating a new seed](#creating-a-new-seed)
+- [Testing](#testing)
+  - [Example](#example)
+  - [Snapshot testing](#snapshot-testing)
+    - [Developer flow](#developer-flow)
+      - [For Order Sensitive Operations](#for-order-sensitive-operations)
+      - [For Non-Order Sensitive Operations](#for-non-order-sensitive-operations)
+      - [Testing Migrations](#testing-migrations)
+- [Troubleshooting](#troubleshooting)
+  - [Debugging stored procedures](#debugging-stored-procedures)
+    - [About host.docker.internal](#about-hostdockerinternal)
+  - [Migration Failures](#migration-failures)
+<!-- Created with Markdown All In One VSCode Extension -->
+
 ## compose.yaml
 
 We provide a simple containerized setup of oracledb for local use and testing of migrations (and whatever other
@@ -14,7 +33,7 @@ with m1/m2 chips.  [Running Oracle on Mac M1](https://medium.com/@vhrechukha/how
 docker compose up oracle-db
 ```
 
-## knexfile.js
+## src/db/knexfile.ts
 
 This is the main migration config.  It is setup to use the same local database password in the compose.yaml and then is set up with a
 fake async connection config retrieval function that goes to SSM parameters and SecretsManager to get the config for migrations.
@@ -27,6 +46,24 @@ more admin-like user and then a base config for your application that would retr
 ```shell
 yarn migrate --env local
 ```
+
+## Seeding
+
+Seeds will only ever be run for local environments since they can be destructive and unordered.  As a local developer, you will want to
+run your seeds after having run migrations.  Additionally, you will want to create or edit any seeds for new tables or for tables that
+have had schema changes.
+
+```shell
+yarn seed --env local
+```
+
+### Creating a new seed
+
+```shell
+yarn new-seed my-table-name
+```
+
+This will create a seed file in (src/db/seeds)[src/db/seeds] that you can then update with the appropriate seeding.
 
 # Testing
 

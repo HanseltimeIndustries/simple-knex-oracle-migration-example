@@ -5,6 +5,8 @@
     "knex:run": "knex --knexfile src/db/knexfile.ts",
     "migrate": "yarn ts-node src/db/bin/full-migration.ts --knexfile src/db/knexfile.ts",
     "new-migration": "yarn knex:run migrate:make -x ts && create-corresponding sql file",
+    "seed": "yarn knex:run seed:run",
+    "new-seed": "yarn knex:run seed:make",
     "test": "jest",
     "db-test": "jest --config jest.dbsnap.config.js",
     "db-test-infra-up": "docker compose down int-test-oracle-db && docker compose up int-test-oracle-db -d --wait",
