@@ -2,6 +2,23 @@
 
 This is a very simple repo that demonstrates the use of knex as a migration manager to an oracledb.
 
+- [oracledb knex migration pattern](#oracledb-knex-migration-pattern)
+  - [compose.yaml](#composeyaml)
+  - [knexfile.js](#knexfilejs)
+  - [Migrating](#migrating)
+- [Testing](#testing)
+  - [Example](#example)
+  - [Snapshot testing](#snapshot-testing)
+    - [Developer flow](#developer-flow)
+      - [For Order Sensitive Operations](#for-order-sensitive-operations)
+      - [For Non-Order Sensitive Operations](#for-non-order-sensitive-operations)
+      - [Testing Migrations](#testing-migrations)
+- [Troubleshooting](#troubleshooting)
+  - [Debugging stored procedures](#debugging-stored-procedures)
+    - [About host.docker.internal](#about-hostdockerinternal)
+  - [Migration Failures](#migration-failures)
+<!-- Made with Markdown All In One VSCode Extension -->
+
 ## compose.yaml
 
 We provide a simple containerized setup of oracledb for local use and testing of migrations (and whatever other
