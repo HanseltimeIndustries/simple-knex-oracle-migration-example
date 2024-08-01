@@ -17,6 +17,11 @@ const commonConfig = {
     directory: join(__dirname, 'migrations'),
     // This is an unfortunate design choice, they wrap all migrationns in one transaction for 0 work avoidance
     disableTransactions: true
+  },
+  // Local seed files
+  seeds: {
+    directory: join(__dirname, 'seeds'),
+    recursive: true
   }
 };
 
