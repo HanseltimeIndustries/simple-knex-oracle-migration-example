@@ -10,6 +10,16 @@ export enum Envs {
   Production = 'production',
 }
 
+export const LOCAL_ENVS = [
+  Envs.Local,
+  Envs.TestDb,
+]
+
+export const RDS_ENVS = [
+  Envs.Develop,
+  Envs.Production,
+]
+
 const commonConfig = {
   client: 'oracledb',
   migrations: {
@@ -32,6 +42,7 @@ const ssm = new SSM();
  * @type { Object.<string, import("knex").Knex.Config> }
  */
 const config: { [key in Envs]: Knex.Config } = {
+  // NOTE: if you'd like to use PDBs, create additional pdb connection strings
   local: {
     ...commonConfig,
     connection: {
@@ -39,7 +50,7 @@ const config: { [key in Envs]: Knex.Config } = {
       port: 8888,
       user: 'SYSTEM',
       password: 'testPword',
-      database: 'FREEPDB1',
+      database: 'FREE',
     },
   },
   dbTest: {
@@ -49,7 +60,7 @@ const config: { [key in Envs]: Knex.Config } = {
       port: 8889,
       user: 'SYSTEM',
       password: 'testPword',
-      database: 'FREEPDB1',
+      database: 'FREE'
     },
   },
   develop: {

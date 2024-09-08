@@ -1,12 +1,15 @@
 import { isAbsolute, join } from 'path'
 import Knex, { Knex as KnexType } from 'knex'
-import { deploy as deployStoreProcedures } from './static_data_objects/deploy'
-import { Envs } from './knexfile'
+import { executeSql } from './utils/execute'
+import { readFileSync } from 'fs'
 
-export interface FullMigrationOptions {
+export interface ExecuteOptions {
     env: string
+    sqlFile: string
     knexfile?: string
-    verbose?: boolean
+    binds: {
+        [varName: string]: number |string
+    }
 }
 
 /**
@@ -16,7 +19,7 @@ export interface FullMigrationOptions {
  * knex migration APIs and then apply additional updates
  * for those latest value objects.
  */
-export async function fullMigration(options: FullMigrationOptions) {
+export async function execute(options: ExecuteOptions) {
     let knex: KnexType | undefined
     try {
         const file = options.knexfile || 'knexfile.js'
@@ -25,17 +28,13 @@ export async function fullMigration(options: FullMigrationOptions) {
         const envConfig = config[options.env]
         knex = Knex(envConfig)
 
-        // Run all migrations - todo parameterize for partial
-        console.log('Migrating time sequenced files...')
-        const [_completed, pending] = await knex.migrate.list() as [number, number]
-        await knex.migrate.latest()
-        console.log(`Migrated ${pending} files`)
-        console.log('Updating Stored Procedures...')
-        await deployStoreProcedures(knex, {
-            verbose: options.verbose,
-            env: options.env as Envs,
+        const scriptPath = isAbsolute(options.sqlFile) ? options.sqlFile : join(__dirname, 'scripts', options.sqlFile)
+        const sql = readFileSync(scriptPath).toString()
+        console.log(`Executing ${scriptPath}...\n`)
+        const { consoleOut } = await executeSql(knex, sql, {
+            input: options.binds,
         })
-        console.log('Updated Store Procedures')
+        console.log(consoleOut)
     } finally {
         await knex?.destroy()
     }

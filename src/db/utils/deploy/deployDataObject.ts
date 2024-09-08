@@ -16,5 +16,5 @@ export async function deployDataObject(knex: KnexType, sqlFilePath: string) {
     }
 
     const { dataType, name} = parseDataObjectSql(sql)
-    ensureNoCompileErrors(knex, dataType as CompiledTypes, name)
+    await ensureNoCompileErrors(knex, dataType as CompiledTypes, name)
 }

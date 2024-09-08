@@ -5,8 +5,13 @@ This is a very simple repo that demonstrates the use of knex as a migration mana
 - [oracledb knex migration pattern](#oracledb-knex-migration-pattern)
   - [compose.yaml](#composeyaml)
   - [src/db/knexfile.ts](#srcdbknexfilets)
-  - [Migrating](#migrating)
-  - [Seeding](#seeding)
+- [Migrating](#migrating)
+  - [First Type of Migration: Transient (State-based)](#first-type-of-migration-transient-state-based)
+  - [Second Type of Migration: Non Transient (Static)](#second-type-of-migration-non-transient-static)
+    - [Deploy Order](#deploy-order)
+    - [Deploy Environments](#deploy-environments)
+  - [Bonus: Does it need to be a stored procedure?](#bonus-does-it-need-to-be-a-stored-procedure)
+- [Seeding](#seeding)
     - [Creating a new seed](#creating-a-new-seed)
 - [Testing](#testing)
   - [Example](#example)
@@ -41,13 +46,91 @@ fake async connection config retrieval function that goes to SSM parameters and 
 Note: if you were trying to keep separation of concerns, you would most likely keep a config for migration that gets user info for a 
 more admin-like user and then a base config for your application that would retrieve just table read/write permissioned user info.
 
-## Migrating
+# Migrating
 
 ```shell
 yarn migrate --env local
 ```
 
-## Seeding
+You can run migrations by using the migrate script that is provided in the package.  If you look at the script source, you will notice 
+that we actually wrap the normal knex functionality into [full-migration.ts](./src/db/bin/full-migration.ts).
+
+## First Type of Migration: Transient (State-based)
+
+The first type of migration is what Knex does really well.  That migration is where every subsequent migration operates off of the 
+database's current state.  This is still replayable mind you, but means we HAVE to make sure that everything plays in the same order.
+
+Basically, anything that you can run some sort of alter against, falls into this category.
+
+## Second Type of Migration: Non Transient (Static) 
+
+The second type of migration is for something that we (the user) have decided will never be dependent on the state of the database when altering.
+Where this normally shakes out, would be in procedures and functions etc.  Since you can only do `CREATE OR REPLACE` on these resources there
+is no sense of these data objects requiring the previous state of the procedure to update.  If you were to update these creates or replaces  in a
+Transient migration pattern, you would end up having to copy and paste the last procedure to new migration files.  This can cause a lot of tracking
+problems since there is no git-like delta between files for that and can lead to weird race conditions where two developers merge in their respective
+overwrites.
+
+The solution to this is to create a static .sql in the [static_data_objects](./src/db/static_data_objects/).  The full-migration script will run
+all of these .sql files after having performed all transient migrations.
+
+### Deploy Order
+
+There is one [deploy.ts](./src/db/static_data_objects/) in the static_data_objects folder.  The default behavior of the deployer instance in that
+file is that is will run all .sql files *in parallel* if they are not yet deployed when `deployer.finalize()` is called.
+
+If you need a specific order (for instance, you may have a procedure that calls another procedure and uses a custom type), then you can take advantage
+of async/await to simply order the files that you want deployed in the file before the `finalize()` call.
+
+```typescript
+
+// Presumably, proc_a uses func_a
+await deployer.deploy('functions/func_a.sql')
+await deployer.deploy('procedure/proc_a.sql')
+
+// Everything else is deployed in parallel
+await deploy.finalize()
+```
+
+### Deploy Environments
+
+In the event that your local oracledb can't replicate the environment of your prod db, you may need to create different static objects depending on 
+the database.  While this is not ideal because we can't test locally, it is an inevitability when doing something like use AWS Oracle for RDS.
+
+If we were using amazon rds, you would not be able to use many permissions and functions and would also need to use the `rdsadmin` user functions
+instead of many of the other oracle solutions online (due to safety considerations on the instance).
+
+You are the maintainer of your own environments in the [knexfile.ts](src/db/knexfile.ts) and you can make use of that with the deployer API.
+
+```typescript
+await deployer.deploy('functions/list_directory_files.sql', {
+    onlyForEnvs: LOCAL_ENVS,
+})
+```
+
+Keep in mind that `finalize()` will try to deploy to any environment, so you have to make sure you have a specific deploy statement before that
+call.
+
+## Bonus: Does it need to be a stored procedure?
+
+As talked about with RDS already, there are differeneces between a local oracledb and AWS RDS.  One of the biggest differences is the `rdsadmin` user
+and packages.  Not only is that package not testable/compilable on your local database host, *it is also not allowed to be compiled into procedures*.
+
+There are some confusing threads about trying to compile procedures that use rdsadmin that basically arrive at the explanation:
+
+  The user can run blocks under their role but procedures are not granted role permissions.
+
+Therefore, if you were to create somme procedure like `delete_all_files_in_directory`, you might find yourself spending tons of time crafting a 
+procedure for your local machine, and then find out that you also have to craft it for the RDS machine (since permissions are different), ONLY to
+find out that your procedure can't compile because you need to use rdsadmin!
+
+In that case, wouldn't it be better to just keep a set of scripts that you or another developer can call via CLI to run those operations?
+
+If that makes sense to you, we provide the [scripts](./src/db/scripts/) folder where you can put specifically named sql blocks.  This is a lower
+burden of QA (mind you), becuase we have no way to automate running these things, but it does allow you to have a space for "SQL that I wish was
+a procedure so it would be codified but can't be due to safety restrictions on compiled processes".
+
+# Seeding
 
 Seeds will only ever be run for local environments since they can be destructive and unordered.  As a local developer, you will want to
 run your seeds after having run migrations.  Additionally, you will want to create or edit any seeds for new tables or for tables that

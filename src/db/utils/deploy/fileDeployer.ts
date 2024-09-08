@@ -31,11 +31,13 @@ export class FileDeployer {
     private finished: boolean = false
     private knex: KnexType
     readonly verbose: boolean
+    readonly env: string
 
     constructor(dir: string, options:  {
         extensions: string[]
         knex: KnexType
         verbose?: boolean
+        env: string
     }) {
         getFilesRecursive(dir, new Set(options.extensions)).forEach((f) => {
             this.deploys.set(f, false)
@@ -43,18 +45,25 @@ export class FileDeployer {
         this.dir = dir
         this.knex = options.knex
         this.verbose = !!options.verbose
+        this.env = options.env
     }
 
-    async deploy(file: string) {
+    async deploy(file: string, options?: {
+        onlyForEnvs: string[]
+    }) {
         if (this.deploys.get(file)) {
             throw new Error(`Already deployed ${file}!`)
         }
-        if (this.verbose) {
-            console.log(`Deploying ${file}`)
-        }
-        await deployDataObject(this.knex, join(this.dir, file))
-        if (this.verbose) {
-            console.log(`Finished Deploying ${file}`)
+        if (!options?.onlyForEnvs || options.onlyForEnvs.includes(this.env)) {
+            if (this.verbose) {
+                console.log(`Deploying ${file}`)
+            }
+            await deployDataObject(this.knex, join(this.dir, file))
+            if (this.verbose) {
+                console.log(`Finished Deploying ${file}`)
+            }
+        } else {
+            console.log(`Skipping ${file}`)
         }
         this.deploys.set(file, true)
     }
