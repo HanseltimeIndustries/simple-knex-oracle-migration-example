@@ -6,6 +6,8 @@ import { fullMigration } from './fullMigration'
 let client: KnexType
 /**
  * Ensures that we at least run integration tests
+ * 
+ * IMPORTANT - you may need to push the timelimit for migrations as they grow
  */
 beforeAll(async () => {
 
@@ -36,7 +38,7 @@ beforeAll(async () => {
         env: Envs.TestDb,
         knexfile: join(__dirname, 'knexfile.ts')
     })
-})
+}, 10000)
 
 afterAll(async () => {
     await client?.destroy()

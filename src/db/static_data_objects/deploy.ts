@@ -30,10 +30,6 @@ export async function deploy(knex: KnexType, options: {
     await deployer.deploy('functions/list_directory_files.sql', {
         onlyForEnvs: LOCAL_ENVS,
     })
-    
-    // Start ordered deployments as needed
-    await deployer.deploy('stored_procedures/proc_a.sql')
-    await deployer.deploy('stored_procedures/proc_b.sql')
 
     // All the other files that don't have consequence to their deployment
     await deployer.finish()

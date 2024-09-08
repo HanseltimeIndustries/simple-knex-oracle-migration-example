@@ -1,6 +1,7 @@
 import { isAbsolute, join } from 'path'
 import Knex, { Knex as KnexType } from 'knex'
-import { deploy as deployStoreProcedures } from './stored_procedures/deploy'
+import { deploy as deployStoreProcedures } from './static_data_objects/deploy'
+import { Envs } from './knexfile'
 
 export interface FullMigrationOptions {
     env: string
@@ -32,6 +33,7 @@ export async function fullMigration(options: FullMigrationOptions) {
         console.log('Updating Stored Procedures...')
         await deployStoreProcedures(knex, {
             verbose: options.verbose,
+            env: options.env as Envs,
         })
         console.log('Updated Store Procedures')
     } finally {
